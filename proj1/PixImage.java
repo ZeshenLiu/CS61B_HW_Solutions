@@ -62,6 +62,12 @@ public class PixImage {
     return this.height;
   }
 
+
+  private boolean checkBoundary(int x, int y) {
+    if (x < 0 || x >= width) return true;
+    if (y < 0 || y >= height) return true;
+    return false;
+  }
   /**
    * getRed() returns the red intensity of the pixel at coordinate (x, y).
    *
@@ -71,6 +77,9 @@ public class PixImage {
    */
   public short getRed(int x, int y) {
     // Replace the following line with your solution.
+    if (checkBoundary(x, y)) {
+      return 0;
+    }
     return pixels[x][y][0];
   }
 
@@ -83,6 +92,9 @@ public class PixImage {
    */
   public short getGreen(int x, int y) {
     // Replace the following line with your solution.
+    if (checkBoundary(x, y)) {
+      return 0;
+    }
     return pixels[x][y][1];
   }
 
@@ -95,6 +107,9 @@ public class PixImage {
    */
   public short getBlue(int x, int y) {
     // Replace the following line with your solution.
+    if (checkBoundary(x, y)) {
+      return 0;
+    }
     return pixels[x][y][2];
   }
 
@@ -113,6 +128,9 @@ public class PixImage {
    */
   public void setPixel(int x, int y, short red, short green, short blue) {
     // Your solution here.
+    if (checkBoundary(x, y)) {
+      return;
+    }
     this.pixels[x][y][0] = red;
     this.pixels[x][y][1] = green;
     this.pixels[x][y][2] = blue;
@@ -176,41 +194,109 @@ public class PixImage {
       return this;
     }
     else {
-      PixImage newImg = new PixImage(this.width, this.height);
-      while (numIterations > 0) {
-
-        numIterations--;
+      PixImage blrImg = new PixImage(width, height);
+      for(int i = 0; i < width; i++) {
+        for(int j = 0; j < height; j++) {
+          blrImg.setPixel(i, j, getRed(i, j), getGreen(i, j), getBlue(i, j));
+        }
       }
-    }
-    
+
+      while (numIterations > 0) {
+        PixImage tempImg = new PixImage(width, height);
+        for (int i = 0; i < width; i++) {
+          for (int j = 0; j < height; j++) {
+            short[] pxl = calcAvg(blrImg, i, j);
+            tempImg.setPixel(i, j, pxl[0], pxl[1], pxl[2]);
+          }
+        }
+        numIterations--;
+        blrImg = tempImg;
+        // for(int i = 0; i < width; i++) {
+        //   for(int j = 0; j < height; j++) {
+        //     blrImg.setPixel(i, j, tempImg.getRed(i, j), tempImg.getGreen(i, j), tempImg.getBlue(i, j));
+        //   }
+        // }
+      }
+      return blrImg;
+    }   
   }
 
 
   private short[] calcAvg(PixImage img, int x, int y) {
-    int avgR, avgG, avgB;
-    // 4 corners
+    int sumR = 0, sumG = 0, sumB = 0;
+    int neighbor = 9;
     if (x == 0) {
       // left upper corner 
       if (y == 0) {
-        int sumR = img.getRed(0, 0) + img.getRed(0, 1) + img.getRed(1, 0) + img.getRed(1, 1);
-        int sumG = img.getGreen(0, 0) + img.getGreen(0, 1) + img.getGreen(1, 0) + img.getGreen(1, 1);
-        int sumB = img.getBlue(0, 0) + img.getBlue(0, 1) + img.getBlue(1, 0) + img.getBlue(1, 1);   
-        avgR = (short) sumR / 4; 
-        avgG = (short) sumG / 4;    
-        avgB = (short) sumB / 4; 
+        sumR = img.getRed(0, 0) + img.getRed(0, 1) + img.getRed(1, 0) + img.getRed(1, 1);
+        sumG = img.getGreen(0, 0) + img.getGreen(0, 1) + img.getGreen(1, 0) + img.getGreen(1, 1);
+        sumB = img.getBlue(0, 0) + img.getBlue(0, 1) + img.getBlue(1, 0) + img.getBlue(1, 1);   
+        neighbor = 4;
       }
       // left lower corner
       else if (y == img.getHeight()-1) {
-        int sumR = img.getRed(0, y) + img.getRed(0, y-1) + img.getRed(1, y) + img.getRed(1, y-1);
-        int sumG = img.getGreen(0, y) + img.getGreen(0, y-1) + img.getGreen(1, y) + img.getGreen(1, y-1);
-        int sumB = img.getBlue(0, y) + img.getBlue(0, y-1) + img.getBlue(1, y) + img.getBlue(1, y-1);             
-        avgR = (short) sumR / 4; 
-        avgG = (short) sumG / 4;    
-        avgB = (short) sumB / 4; 
+        sumR = img.getRed(0, y) + img.getRed(0, y-1) + img.getRed(1, y) + img.getRed(1, y-1);
+        sumG = img.getGreen(0, y) + img.getGreen(0, y-1) + img.getGreen(1, y) + img.getGreen(1, y-1);
+        sumB = img.getBlue(0, y) + img.getBlue(0, y-1) + img.getBlue(1, y) + img.getBlue(1, y-1);             
+        neighbor = 4;
+      }
+      // left edge
+      else {
+        sumR = img.getRed(x, y) + img.getRed(x, y-1) + img.getRed(x, y+1) + img.getRed(x+1, y) + img.getRed(x+1, y-1) + img.getRed(x+1, y+1);
+        sumG = img.getGreen(x, y) + img.getGreen(x, y-1) + img.getGreen(x, y+1) + img.getGreen(x+1, y) + img.getGreen(x+1, y-1) + img.getGreen(x+1, y+1);
+        sumB = img.getBlue(x, y) + img.getBlue(x, y-1) + img.getBlue(x, y+1)  + img.getBlue(x+1, y) + img.getBlue(x+1, y-1) + img.getBlue(x+1, y+1);             
+        neighbor = 6;
       }
     }
+    else if (x == getWidth()-1) {
+       // right upper corner 
+      if (y == 0) {
+        sumR = img.getRed(x, y) + img.getRed(x, y+1) + img.getRed(x-1, y) + img.getRed(x-1, y+1);
+        sumG = img.getGreen(x, y) + img.getGreen(x, y+1) + img.getGreen(x-1, y) + img.getGreen(x-1, y+1);
+        sumB = img.getBlue(x, y) + img.getBlue(x, y+1) + img.getBlue(x-1, y) + img.getBlue(x-1, y+1);   
+        neighbor = 4;
+      }
+      // right lower corner
+      else if (y == img.getHeight()-1) {
+        sumR = img.getRed(x, y) + img.getRed(x, y-1) + img.getRed(x-1, y) + img.getRed(x-1, y-1);
+        sumG = img.getGreen(x, y) + img.getGreen(x, y-1) + img.getGreen(x-1, y) + img.getGreen(x-1, y-1);
+        sumB = img.getBlue(x, y) + img.getBlue(x, y-1) + img.getBlue(x-1, y) + img.getBlue(x-1, y-1);             
+        neighbor = 4;
+      }
+      // right edge
+      else {
+        sumR = img.getRed(x, y) + img.getRed(x, y-1) + img.getRed(x, y+1) + img.getRed(x-1, y) + img.getRed(x-1, y-1) + img.getRed(x-1, y+1);
+        sumG = img.getGreen(x, y) + img.getGreen(x, y-1) + img.getGreen(x, y+1) + img.getGreen(x-1, y) + img.getGreen(x-1, y-1) + img.getGreen(x-1, y+1);
+        sumB = img.getBlue(x, y) + img.getBlue(x, y-1) + img.getBlue(x, y+1)  + img.getBlue(x-1, y) + img.getBlue(x-1, y-1) + img.getBlue(x-1, y+1);             
+        neighbor = 6;
+      }
+    }
+    // upper edge
+    else if(y == 0) {
+        sumR = img.getRed(x, y) + img.getRed(x-1, y) + img.getRed(x, y+1) + img.getRed(x+1, y) + img.getRed(x+1, y+1) + img.getRed(x-1, y+1);
+        sumG = img.getGreen(x, y) + img.getGreen(x-1, y) + img.getGreen(x, y+1) + img.getGreen(x+1, y) + img.getGreen(x+1, y+1) + img.getGreen(x-1, y+1);
+        sumB = img.getBlue(x, y) + img.getBlue(x-1, y) + img.getBlue(x, y+1)  + img.getBlue(x+1, y) + img.getBlue(x+1, y+1) + img.getBlue(x-1, y+1);             
+        neighbor = 6;
+    }
+    // lower edge
+    else if (y == img.getHeight() - 1) {
+        sumR = img.getRed(x, y) + img.getRed(x-1, y) + img.getRed(x, y-1) + img.getRed(x+1, y) + img.getRed(x+1, y-1) + img.getRed(x-1, y-1);
+        sumG = img.getGreen(x, y) + img.getGreen(x-1, y) + img.getGreen(x, y-1) + img.getGreen(x+1, y) + img.getGreen(x+1, y-1) + img.getGreen(x-1, y-1);
+        sumB = img.getBlue(x, y) + img.getBlue(x-1, y) + img.getBlue(x, y-1)  + img.getBlue(x+1, y) + img.getBlue(x+1, y-1) + img.getBlue(x-1, y-1);             
+        neighbor = 6;
+    }
+    else {
+        int[] dx = {1, 1, 1, 0, 0, 0, -1, -1, -1};
+        int[] dy = {1, -1, 0, 1, -1, 0, 1, -1, 0};
+        for (int i = 0; i < 9; i++) {
+            sumR += img.getRed(x+dx[i], y+dy[i]);
+            sumG += img.getGreen(x+dx[i], y+dy[i]);
+            sumB += img.getBlue(x+dx[i], y+dy[i]);
+        }
+    }
 
-     || (x == 0 || y == img.getHeight())
+    short[] pixels = {(short)(sumR/neighbor), (short)(sumG/neighbor), (short)(sumB/neighbor)};
+    return pixels;
   }
 
   /**
@@ -255,11 +341,26 @@ public class PixImage {
    */
   public PixImage sobelEdges() {
     // Replace the following line with your solution.
-    return this;
+ //   return this;
     // Don't forget to use the method mag2gray() above to convert energies to
     // pixel intensities.
+    PixImage sobImg = new PixImage(width, height);
+
+    
   }
 
+
+  private int reflectX(int x) {
+    if (x < 0) return 0;
+    if (x >= width) return width-1;
+    return x;
+  }
+
+  private int reflectX(int y) {
+    if (y < 0) return 0;
+    if (x >= height) return height-1;
+    return y;
+  }
 
   /**
    * TEST CODE:  YOU DO NOT NEED TO FILL IN ANY METHODS BELOW THIS POINT.

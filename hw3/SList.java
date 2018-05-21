@@ -123,7 +123,6 @@ public class SList {
       }
       cur = cur.next;     
     }
-    System.out.println("SList size is: " + size);
   }
 
   /**
@@ -148,7 +147,6 @@ public class SList {
       cur = newNode.next;
       size++;
     }
-    System.out.println("SList size is: " + size);
   }
 
   /**
