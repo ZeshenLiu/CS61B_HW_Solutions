@@ -345,8 +345,46 @@ public class PixImage {
     // Don't forget to use the method mag2gray() above to convert energies to
     // pixel intensities.
     PixImage sobImg = new PixImage(width, height);
-
     
+    for (int i = 0; i < width; i++) {
+      for (int j = 0; j < height; j++) {
+        long en = energy(this, i, j);
+        short inten = mag2gray(en);
+        sobImg.setPixel(i, j, inten, inten, inten); 
+      }
+    }
+
+    return sobImg;
+    
+  }
+
+  private long energy(PixImage img, int x, int y) {
+    int[] gxLeft = {1, 0, -1, 2, 0, -2, 1, 0, -1};
+    int[] gyLeft = {1, 2, 1, 0, 0, 0, -1, -2, -1}; 
+
+    int[] dx = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
+    int[] dy = {-1, -1, -1, 0, 0, 0, 1, 1, 1};
+    int[][] gRight = new int[9][2]; //
+    for (int i = 0; i < 9; i++) {
+      gRight[i][0] = reflectX(x + dx[i]);
+      gRight[i][1] = reflectY(y + dy[i]);
+    }
+    long gxR = 0;
+    long gxG = 0;
+    long gxB = 0;
+    long gyR = 0;
+    long gyG = 0;
+    long gyB = 0;
+    for (int i = 0; i < 9; i++) {
+      gxR += gxLeft[i] * img.getRed(gRight[i][0], gRight[i][1]);
+      gxG += gxLeft[i] * img.getGreen(gRight[i][0], gRight[i][1]);
+      gxB += gxLeft[i] * img.getBlue(gRight[i][0], gRight[i][1]);
+      gyR += gyLeft[i] * img.getRed(gRight[i][0], gRight[i][1]);
+      gyG += gyLeft[i] * img.getGreen(gRight[i][0], gRight[i][1]);
+      gyB += gyLeft[i] * img.getBlue(gRight[i][0], gRight[i][1]);
+    }
+
+    return gxR * gxR + gxG * gxG + gxB * gxB + gyR * gyR + gyG * gyG + gyB * gyB;
   }
 
 
@@ -356,9 +394,9 @@ public class PixImage {
     return x;
   }
 
-  private int reflectX(int y) {
+  private int reflectY(int y) {
     if (y < 0) return 0;
-    if (x >= height) return height-1;
+    if (y >= height) return height-1;
     return y;
   }
 
