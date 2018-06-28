@@ -9,6 +9,7 @@ public class LockDList extends DList {
 	protected LockDListNode newNode(Object item, DListNode prev, DListNode next) {
 	    return new LockDListNode(item, prev, next);
 	}
+
 	
 	public void lockNode(DListNode node) {
 		if (node == null) {
