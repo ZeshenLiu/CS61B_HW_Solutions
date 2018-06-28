@@ -8,7 +8,7 @@ import list.*;
  **/
 public class Set {
   /* Fill in the data fields here. */
-
+  List mylist;
   /**
    * Set ADT invariants:
    *  1)  The Set's elements must be precisely the elements of the List.
@@ -24,6 +24,7 @@ public class Set {
    **/
   public Set() { 
     // Your solution here.
+    mylist = new DList();
   }
 
   /**
@@ -33,7 +34,7 @@ public class Set {
    **/
   public int cardinality() {
     // Replace the following line with your solution.
-    return 0;
+    return mylist.length();
   }
 
   /**
@@ -46,6 +47,35 @@ public class Set {
    **/
   public void insert(Comparable c) {
     // Your solution here.
+    if (c == null) {
+      return;
+    }
+
+    if (mylist.length() == 0) {
+      mylist.insertFront(c);
+      return;
+    }
+
+    ListNode trav = mylist.front();
+    try {
+      while (trav.isValidNode()) {
+        if (c.compareTo(trav.item()) == 0) {
+          return;
+        }
+        else if (c.compareTo(trav.item()) < 0) {
+          trav.insertBefore(c);
+          return;
+        }
+        else if (c.compareTo(trav.item()) > 0) {
+          trav = trav.next();
+        }
+      }
+      mylist.insertBack(c);
+
+    }
+    catch (InvalidNodeException e) {
+      
+    }
   }
 
   /**
@@ -65,6 +95,34 @@ public class Set {
    **/
   public void union(Set s) {
     // Your solution here.
+    ListNode node1 = mylist.front();
+    ListNode node2 = s.mylist.front();
+    try {
+      while (node1.isValidNode() && node2.isValidNode()) {
+        int flag = ((Comparable)node1.item()).compareTo(((Comparable)node2.item()));
+        if (flag == 0) {
+          node1 = node1.next();
+          node2 = node2.next();
+        }
+        else if (flag > 0) {
+          node1.insertBefore(node2.item());
+          node2 = node2.next();
+        }
+        else {
+          node1 = node1.next();
+        }
+      }
+
+      while (node2.isValidNode()) {
+          mylist.insertBack(node2.item());
+          node2 = node2.next();
+      }
+
+    }
+    catch (InvalidNodeException e) {
+      
+    }
+
   }
 
   /**
@@ -82,6 +140,35 @@ public class Set {
    **/
   public void intersect(Set s) {
     // Your solution here.
+    ListNode node1 = mylist.front();
+    ListNode node2 = s.mylist.front();
+    try {
+      while (node1.isValidNode() && node2.isValidNode()) {
+        int flag = ((Comparable)node1.item()).compareTo(((Comparable)node2.item()));
+        if (flag == 0) {
+          node1 = node1.next();
+          node2 = node2.next();
+        }
+        else if (flag > 0) {
+          node2 = node2.next();
+        }
+        else {
+          ListNode temp = node1;
+          node1 = node1.next();
+          temp.remove();
+        }
+      }
+
+      while (node1.isValidNode()) {
+          ListNode temp = node1;
+          node1 = node1.next();
+          temp.remove();
+      }
+
+    }
+    catch (InvalidNodeException e) {
+
+    }
   }
 
   /**
@@ -101,7 +188,21 @@ public class Set {
    **/
   public String toString() {
     // Replace the following line with your solution.
-    return "";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{  ");
+    ListNode node1 = mylist.front();
+    try {
+      while (node1.isValidNode()) {
+        sb.append(node1.item());
+        sb.append("  ");
+        node1 = node1.next();
+      }
+    }
+    catch (InvalidNodeException e) {
+      
+    }
+    sb.append("}");
+    return sb.toString();
   }
 
   public static void main(String[] argv) {
