@@ -1,7 +1,7 @@
 /* HashTableChained.java */
 
 package dict;
-
+import list.*;
 /**
  *  HashTableChained implements a Dictionary as a hash table with chaining.
  *  All objects used as keys must have a valid hashCode() method, which is
@@ -19,7 +19,9 @@ public class HashTableChained implements Dictionary {
   /**
    *  Place any data fields here.
    **/
-
+  private int size;
+  private int capacity;
+  private DList[] table;
 
 
   /** 
@@ -30,8 +32,33 @@ public class HashTableChained implements Dictionary {
 
   public HashTableChained(int sizeEstimate) {
     // Your solution here.
+    this.size = 0;
+    sizeEstimate *= 2;
+    while (!isPrime(sizeEstimate)) {
+      sizeEstimate--;
+    }
+    this.capacity = sizeEstimate;
+    table = new DList[this.capacity];
+    for (int i = 0; i < table.length; i++) {
+      table[i] = new DList();
+    }
   }
 
+
+  private boolean isPrime(int num) {
+    if (num == 2 || num == 3) {
+      return true;
+    }
+    if (num < 2) {
+      return false;
+    }
+    for (int i = 2; i * i <= num; i++) {
+      if (num % i == 0) {
+          return false;
+      }
+    }
+    return true;
+  }
   /** 
    *  Construct a new empty hash table with a default size.  Say, a prime in
    *  the neighborhood of 100.
@@ -39,6 +66,7 @@ public class HashTableChained implements Dictionary {
 
   public HashTableChained() {
     // Your solution here.
+    this(101);
   }
 
   /**
@@ -51,7 +79,8 @@ public class HashTableChained implements Dictionary {
 
   int compFunction(int code) {
     // Replace the following line with your solution.
-    return 88;
+    long n = ((code * 13L + 31L) % 1000000007L) % ((long)(capacity));
+    return (int)n;
   }
 
   /** 
@@ -63,7 +92,7 @@ public class HashTableChained implements Dictionary {
 
   public int size() {
     // Replace the following line with your solution.
-    return 0;
+    return size;
   }
 
   /** 
@@ -74,7 +103,7 @@ public class HashTableChained implements Dictionary {
 
   public boolean isEmpty() {
     // Replace the following line with your solution.
-    return true;
+    return size == 0;
   }
 
   /**
@@ -92,7 +121,13 @@ public class HashTableChained implements Dictionary {
 
   public Entry insert(Object key, Object value) {
     // Replace the following line with your solution.
-    return null;
+    Entry e = new Entry();
+    e.key = key;
+    e.value = value;
+    int index = compFunction(key.hashCode());
+    table[index].insertBack(e);
+    size++;
+    return e;
   }
 
   /** 
@@ -109,6 +144,19 @@ public class HashTableChained implements Dictionary {
 
   public Entry find(Object key) {
     // Replace the following line with your solution.
+    int index = compFunction(key.hashCode());
+    DListNode trav = (DListNode)(table[index].front());
+    try {
+      while (trav.isValidNode()) {
+        if (key.equals(((Entry)trav.item()).key())) {
+          return ((Entry)trav.item());
+        }
+        trav = (DListNode)(trav.next());
+      }
+    }
+    catch (InvalidNodeException e) {
+
+    }
     return null;
   }
 
@@ -127,7 +175,23 @@ public class HashTableChained implements Dictionary {
 
   public Entry remove(Object key) {
     // Replace the following line with your solution.
-    return null;
+    int index = compFunction(key.hashCode());
+    DListNode trav = (DListNode)(table[index].front());
+    try {
+      while (trav.isValidNode()) {
+        if (key.equals(((Entry)trav.item()).key())) {
+          Entry e = ((Entry)trav.item());
+          trav.remove();
+          this.size--;
+          return e;
+        }
+        trav = (DListNode)(trav.next());
+      }
+    }
+    catch (InvalidNodeException e) {
+
+    }
+    return null;   
   }
 
   /**
@@ -135,6 +199,10 @@ public class HashTableChained implements Dictionary {
    */
   public void makeEmpty() {
     // Your solution here.
+    size = 0;
+    for (int i = 0; i < table.length; i++) {
+      table[i] = new DList();
+    }
   }
 
 }
